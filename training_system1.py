@@ -242,7 +242,8 @@ class DCASETALNetClassifier(LightningModule):
 
 def main(hparams):
    seed_everything(hparams.seed)
-   MAIN_DIR = os.path.join(config.path_to_summaries,'TALNetV2_LOSS_TRYHARD/')
+   # 'TALNetV2_LOSS_TRYHARD/'
+   MAIN_DIR = os.path.join(config.path_to_summaries,'system1/')
    model = DCASETALNetClassifier(hparams)
    early_stop_callback = EarlyStopping(
       monitor='auprc_macro',
@@ -276,4 +277,3 @@ if __name__ == '__main__':
    parser = Trainer.add_argparse_args(parser)
    hparams = parser.parse_args()
    main(hparams)
-   # tensorboard --host localhost --logdir /Users/augustinarnault/Downloads/lightning_logs

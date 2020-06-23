@@ -1,4 +1,5 @@
 import os
+import shutil
 import pickle
 
 import oyaml as yaml
@@ -119,24 +120,27 @@ def clean_annotation_and_use_relabel(dataframe,idlabel_presence_dict, idlabel_di
 
 class SONYCUST(Dataset):
    base_folder = 'SONYC-UST'
-   ressources = [
-      ("https://zenodo.org/record/3693077/files/audio.tar.gz", "audio", "e709fbbeade2e45d1fbc755fda688a04"),
-      ("https://zenodo.org/record/3693077/files/annotations.csv", "annotations.csv", "7b162f81a084b13d3b2fdad5d8536cc3"),
-      ("https://zenodo.org/record/3693077/files/dcase-ust-taxonomy.yaml", "dcase-ust-taxonomy.yaml", "6c1cca1c4c383a6ebb0cb71cb74fe3a9")
+   resources = [
+      ("https://zenodo.org/record/3873076/files/audio.tar.gz", "audio", "e709fbbeade2e45d1fbc755fda688a04"),
+      ("https://zenodo.org/record/3873076/files/audio-eval-0.tar.gz", "audio-eval-0", "f92136a4a77c626a0900c18217c908bf"),
+      ("https://zenodo.org/record/3873076/files/audio-eval-1.tar.gz", "audio-eval-1", "b9a727afcdb794572bf3d60b879e30a8"),
+      ("https://zenodo.org/record/3873076/files/audio-eval-2.tar.gz", "audio-eval-2", "05b06fd8e274e6b8ae9202bd09fddc56"),
+      ("https://zenodo.org/record/3873076/files/annotations.csv", "annotations.csv", "5292e1eed610775a4460103989db2d69"),
+      ("https://zenodo.org/record/3873076/files/dcase-ust-taxonomy.yaml", "dcase-ust-taxonomy.yaml", "6c1cca1c4c383a6ebb0cb71cb74fe3a9")
    ]
    all_metadata_labels = ["sensor_id","annotator_id","borough","block",
                "latitude","longitude","year","week","day","hour"]
    
    def __init__(self, sonycust_folder, mode, metadata=None, transform=None, download=False):
       super().__init__()
-      # Here we declare every path useful
+      # Here we declare every useful path
       self.sonycust_folder = sonycust_folder
       self.file_path_dict = {name:os.path.join(self.sonycust_folder, name)
-         for _,name,_ in self.ressources}
+         for _,name,_ in self.resources}
       self.file_path_dict.update({'embedding':os.path.join(self.sonycust_folder, 'embedding')})
       self.file_path_dict.update({'melTALNet':os.path.join(self.sonycust_folder, 'melTALNet')})
       self.file_path_dict.update({'audio_PANN_32000':os.path.join(self.sonycust_folder, 'audio_PANN_32000')})
-      self.file_path_dict.update({'TALNet_audioset_gru':os.path.join(self.sonycust_folder, 'TALNet_audioset_gru')})
+
       # Downloading and extracting if needed
       if download:
          self.download()
@@ -155,36 +159,31 @@ class SONYCUST(Dataset):
 
       self.metadata_labels = self.all_metadata_labels if metadata == None else metadata
 
-      self.raw_annotation_df = pd.read_csv(self.file_path_dict[self.ressources[1][1]])
+      self.raw_annotation_df = pd.read_csv(self.file_path_dict['annotations.csv'])
       self.annotation_df = self.raw_annotation_df.copy()
 
    def download(self):
+
       if os.path.exists(self.sonycust_folder):
          return
 
       os.makedirs(self.sonycust_folder, exist_ok=True)
       
-      # download files
-      for url, filename, md5 in self.resources[1:]:
+      # Download files
+      print("Downloading files")
+      for url, filename, md5 in self.resources[4:]:
          filename = url.rpartition('/')[2]
-         download_url(url, download_root=self.sonycust_folder, filename=filename, md5=md5)
+         download_url(url, root=self.sonycust_folder, filename=filename, md5=md5)
       
-      for url, filename, md5 in self.resources[0]:
-         download_and_extract_archive(url, download_root=self.sonycust_folder, filename=filename, md5=md5, remove_finished=True)
+      for url, filename, md5 in self.resources[0:4]:
+         download_and_extract_archive(url, download_root=self.sonycust_folder, filename=filename+".tar.gz", md5=md5, remove_finished=True)
 
-   def precompute_wav(self, sample_rate=32000):
-      if ~os.path.exists(self.file_path_dict['audio_PANN_32000']):
-         os.makedirs(self.file_path_dict['audio_PANN_32000'], exist_ok=True)
-
-      audio_list_path = [os.path.join(self.file_path_dict["audio"], x) 
-                  for x in list(pd.unique(self.raw_annotation_df["audio_filename"]))]
-      
-      def compute_one_wav(filename):
-         wav = librosa.load(filename, sr=sample_rate, mono=True)[0]
-         np.save(os.path.join(self.file_path_dict['audio_PANN_32000'], os.path.basename(filename)[:-3] + 'npy'), wav)
-      
-      _ = Parallel(n_jobs=-2)(delayed(lambda x: compute_one_wav(x))(x)
-		for x in tqdm(audio_list_path))
+      # Moving evaluation files to audio directory
+      print("Moving files from eval to audio")
+      for eval_num in range(3):
+         for f in os.listdir(self.file_path_dict['audio-eval-'+str(eval_num)]):
+            if f.endswith(".wav"):
+               shutil.move(os.path.join(self.file_path_dict['audio-eval-'+str(eval_num)], f), self.file_path_dict['audio'])
 
    def compute_melspec(self):
       """Configuration for filterbank feature extraction: 
@@ -224,7 +223,7 @@ class SONYCUST(Dataset):
             coarse_idlabel_list (list) : List of coarse label with their id
       """
       # Loading taxonomy
-      with open(self.file_path_dict[self.ressources[2][1]], "r") as f:
+      with open(self.file_path_dict['dcase-ust-taxonomy.yaml'], "r") as f:
          taxonomy = yaml.load(f, Loader=yaml.Loader)
 
       # Write labels inside lists according to the grain (fine/coarse)
@@ -360,135 +359,3 @@ class SONYCUST_TALNet(SONYCUST):
          'proximity':proximity,'label': label}
 
       return base_dict
-
-class SONYCUST_PANN(SONYCUST):
-   def __init__(self, sonycust_folder, mode, cleaning_strat='DCASE', consensus_threshold=0.01,relabeled_name=None,metadata=None, one_hot_time=False, transform=None, download=False):
-      super().__init__(sonycust_folder, mode, metadata=metadata, transform=transform, download=download)
-
-      if relabeled_name:
-         self.file_path_dict.update({'relabeled_df':os.path.join(self.sonycust_folder, relabeled_name)})
-
-      if cleaning_strat=='DCASE':
-         self.annotation_df = cleaning_annotation_baseline(self.raw_annotation_df, self.idlabel_presence_dict,consensus_threshold=consensus_threshold)
-      elif cleaning_strat=='Relabeled':
-         self.annotation_df = clean_annotation_and_use_relabel(self.raw_annotation_df,self.idlabel_presence_dict,
-            self.idlabel_dict, self.file_path_dict['relabeled_df'])
-      elif cleaning_strat=='All_unique':
-         self.annotation_df = remove_duplicates(self.raw_annotation_df, self.idlabel_presence_dict,consensus_threshold=consensus_threshold)
-
-      self.one_hot_time = one_hot_time
-      if one_hot_time:
-         self.to_one_hot = []
-         for temp in ("week","day","hour"):
-            if temp in self.metadata_labels:
-               self.metadata_labels.remove(temp)
-               self.to_one_hot.append(temp)
-
-         self.one_hot_dict={"week":NUM_WEEKS,"day":NUM_DAYS,"hour":NUM_HOURS}
-
-   def __getitem__(self, index):
-      """ Gives the input vector and the associated one hot encoded label
-         Args:
-            index (int) : the index
-         Returns:
-            Dictionnary containing input embeddings, spatial_context, 
-            temporal_context (one hot encoded), labels (one hot encoded)
-      """
-
-      file_name = self.annotation_df["audio_filename"].iloc[index]
-      file_path = os.path.join(self.file_path_dict["audio"], file_name)
-
-      wav = np.load(os.path.join(self.file_path_dict['audio_PANN_32000'],file_name[:-3]+"npy"))
-
-      metadata = np.array(self.annotation_df[self.metadata_labels].iloc[index])
-
-      if self.one_hot_time and self.to_one_hot != []:
-         for features in self.to_one_hot:
-            one_hot_enc = np.array(one_hot(self.annotation_df[features].iloc[index]-1, self.one_hot_dict[features])) 
-            metadata = np.concatenate((metadata, one_hot_enc), axis=-1)
-
-      if self.mode=='both':
-         label = {'full_fine':np.array(self.annotation_df[self.idlabel_presence_dict['full_fine']].iloc[index]),
-         'fine':np.array(self.annotation_df[self.idlabel_presence_dict['fine']].iloc[index]),
-         'coarse':np.array(self.annotation_df[self.idlabel_presence_dict['coarse']].iloc[index])}
-      else:
-         label = np.array(self.annotation_df[self.idlabel_presence_dict[self.mode]].iloc[index])
-
-      return {'file_name':file_name, 'audio':wav, 'metadata':metadata, 'label': label}
-
-class SONYCUST_TALNet_CNN14(SONYCUST):
-   def __init__(self, sonycust_folder, mode, cleaning_strat='DCASE', consensus_threshold=0.01,relabeled_name=None,metadata=None, one_hot_time=False, return_TALNET_audioset_gru=False, transform=None, download=False):
-      super().__init__(sonycust_folder, mode, metadata=metadata, transform=transform, download=download)
-
-      if relabeled_name:
-         self.file_path_dict.update({'relabeled_df':os.path.join(self.sonycust_folder, relabeled_name)})
-
-      if cleaning_strat=='DCASE':
-         self.annotation_df = cleaning_annotation_baseline(self.raw_annotation_df, self.idlabel_presence_dict,consensus_threshold=consensus_threshold)
-      elif cleaning_strat=='Relabeled':
-         self.annotation_df = clean_annotation_and_use_relabel(self.raw_annotation_df,self.idlabel_presence_dict,
-            self.idlabel_dict, self.file_path_dict['relabeled_df'])
-
-      #self.count_per_class = self.annotation_df[self.annotation_df['split']=='train'][self.idlabel_presence_dict[self.mode]].sum()
-      #self.loss_weights = (1 - self.count_per_class/len(self.annotation_df[self.annotation_df['split']=='train'])).to_numpy()
-
-      self.one_hot_time = one_hot_time
-      if one_hot_time:
-         self.to_one_hot = []
-         for temp in ("week","day","hour"):
-            if temp in self.metadata_labels:
-               self.metadata_labels.remove(temp)
-               self.to_one_hot.append(temp)
-
-         self.one_hot_dict={"week":NUM_WEEKS,"day":NUM_DAYS,"hour":NUM_HOURS}
-
-   def __getitem__(self, index):
-      """ Gives the input vector and the associated one hot encoded label
-         Args:
-            index (int) : the index
-         Returns:
-            Dictionnary containing input embeddings, spatial_context, 
-            temporal_context (one hot encoded), labels (one hot encoded)
-      """
-
-      file_name = self.annotation_df["audio_filename"].iloc[index]
-      mel = np.load(os.path.join(self.file_path_dict['melTALNet'],file_name[:-3]+"npy")).transpose()
-
-      wav = np.load(os.path.join(self.file_path_dict['audio_PANN_32000'],file_name[:-3]+"npy"))
-
-      if self.transform and self.annotation_df["split"].iloc[index]=='train':
-         mel = self.transform(image=mel)['image']
-
-      metadata = np.array(self.annotation_df[self.metadata_labels].iloc[index])
-
-      if self.one_hot_time and self.to_one_hot != []:
-         for features in self.to_one_hot:
-            one_hot_enc = np.array(one_hot(self.annotation_df[features].iloc[index]-1, self.one_hot_dict[features])) 
-            metadata = np.concatenate((metadata, one_hot_enc), axis=-1)
-
-      if self.mode=='both':
-         proximity ={'full_fine':np.array(self.annotation_df[self.idlabel_proximity_dict['full_fine']].iloc[index]),
-            'coarse':np.array(self.annotation_df[self.idlabel_proximity_dict['coarse']].iloc[index])}
-         label = {'full_fine':np.array(self.annotation_df[self.idlabel_presence_dict['full_fine']].iloc[index]),
-            'coarse':np.array(self.annotation_df[self.idlabel_presence_dict['coarse']].iloc[index])}
-      else:
-         proximity = np.array(self.annotation_df[self.idlabel_proximity_dict[self.mode]].iloc[index])
-         label = np.array(self.annotation_df[self.idlabel_presence_dict[self.mode]].iloc[index])
-
-      base_dict = {'file_name':file_name, "audio":wav, "input_vector":mel, 'metadata':metadata,
-         'proximity':proximity,'label': label}
-
-      return base_dict
-
-if __name__=='__main__':
-   data_folder = "/Volumes/Untitled/ML/SONYC-UST"
-   #data = SONYCUST_TALNet(data_folder, 'coarse', cleaning_strat='All_unique')
-   data = SONYCUST_TALNet(data_folder, 'coarse', cleaning_strat='Relabeled', relabeled_name='best_pred.csv')
-   #data = SONYCUST_Metadata(data_folder, 'coarse', metadata=["latitude","longitude","week","day","hour"], one_hot_time=True)
-   
-   a,b = data.train_validation_split()
-   print(len(a), len(b))
-   #dataloader = DataLoader(b, batch_size=1, num_workers=4)
-   #batch =next(iter(dataloader))
-   #data.compute_melspec()
-   #data.precompute_wav()

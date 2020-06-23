@@ -1,6 +1,6 @@
 # UrbanNet [DCASE2020 Task 5](http://dcase.community/challenge2020/task-urban-sound-tagging-with-spatiotemporal-context)
 
-This git contains code for CRNNs we used to participate in Task 5 of the DCASE 2020 challenge. This task focuses on hierarchical multilabel urban sound tagging with spatiotemporal context. If you want more information, our paper is [here](https://www.overleaf.com/project/5ee0b58cc34d6a0001694eb3).
+This git contains code for CRNNs we used to participate in Task 5 of the DCASE 2020 challenge. This task focuses on hierarchical multilabel urban sound tagging with spatiotemporal context.
 
 ## Environement setup
 
@@ -33,11 +33,13 @@ You should edit PATH in `config.py` to match the directory in which everything w
 
 Use the following to download the dataset and precompute inputs for TALNet and CNN14.
 
-WARNING : It requires about 40Go of free space.
+WARNING : It requires about 30Go of free space.
 
 ~~~bash
-python data_prep.py --download --mel --resample
+python data_prep.py --download --mel
 ~~~
+
+If you want to manualy download and decompress files, you have to put everything in the `audio` directory. Then you have to use the aboce command without the `--download`.
 
 ## Training
 
@@ -54,15 +56,18 @@ python training_system1 --gpu 1 --seed 1
 
 Once system3 has been trained a first time, we can use it to relabel everything.
 
+You have to specify the ckpt path and the hparams.yml path. Because of a bug in the pytorch-lighnting build used, hparams.yml has to be edited to remove the early stop part.
+
 ~~~bash
-python relabel.py
+python relabel.py --path_to_ckpt INSERT_HERE --path_to_yaml INSERT_HERE
 ~~~
 
 ## Generating submission file
 
-Because of a bug in the pytorch-lighnting build used, hparams.yml has to be edited to remove the early stop part.
+Like the relabelling part, hparams.yml has to be edited to remove the early stop part.
+
 Once it is done, you have to specify both the path to the checkpoint of the model and the path to the hparams edited.
 
 ~~~bash
-python sub_system1
+python sub_system1 --path_to_ckpt INSERT_HERE --path_to_yaml INSERT_HERE
 ~~~

@@ -159,27 +159,6 @@ class DCASETALNetClassifier(LightningModule):
       loss = self.loss(output, target)
       return {'val_loss':loss, 'output':output, 'target':target, 'filename': filename}
    
-   def test_step(self, batch, batch_idx):
-      # Get input vector and labels, do not forget float()
-      filename, data, meta = batch['file_name'], batch['input_vector'].float(), batch['metadata'].float()
-      # Forward pass
-      output = self.forward(data, meta)[0]
-      return {'output':output, 'filename': filename}
-   
-   def test_epoch_end(self, outputs):
-      all_outputs = torch.cat([o['output'] for o in outputs], 0)
-      filename_array = [f for o in outputs for f in o['filename']]
-      all_outputs_c, all_outputs_f = torch.split(all_outputs, [8,29],1)
-      # Mask to eliminate X_ labels
-      X_mask = ~np.array([0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0], dtype=bool)
-      all_outputs_f = all_outputs_f[:,X_mask]
-         
-      pred_df = pd.DataFrame(columns=['audio_filename']+self.dataset.idlabel_dict['coarse']+self.dataset.idlabel_dict['full_fine'])
-      pred_df['audio_filename'] = filename_array
-      pred_df[self.dataset.idlabel_dict['coarse']] = all_outputs_c
-      pred_df[self.dataset.idlabel_dict['fine']] = all_outputs_f
-      pred_df.to_csv(os.path.join(config.path_to_SONYCUST, "pred_test_TALNETV3_37.csv"), index = False, header=True)
-   
    def validation_epoch_end(self, outputs):
       val_loss = torch.cat([o['val_loss'] for o in outputs], 0).mean()
       all_outputs = torch.cat([o['output'] for o in outputs], 0)
@@ -235,7 +214,8 @@ class DCASETALNetClassifier(LightningModule):
 
 def main(hparams):
    seed_everything(hparams.seed)
-   MAIN_DIR = os.path.join(config.path_to_summaries,'TALNetV3_TO23_1/')
+   #'TALNetV3_TO23_1/'
+   MAIN_DIR = os.path.join(config.path_to_summaries,'system3/')
    model = DCASETALNetClassifier(hparams)
    early_stop_callback = EarlyStopping(
       monitor='auprc_macro_f',
@@ -270,13 +250,4 @@ if __name__ == '__main__':
    parser = DCASETALNetClassifier.add_model_specific_args(parser)
    parser = Trainer.add_argparse_args(parser)
    hparams = parser.parse_args()
-   if hparams.generate_eval:
-      PATH = os.path.join(config.path_to_summaries, 'TALNetV3_TO23_2/checkpoints/epoch=17-auprc_macro_c=0.811.ckpt')
-      hparams_file = os.path.join(config.path_to_summaries, 'TALNetV3_TO23_2/lightning_logs/version_0/hparams_wo_es.yaml')
-      # Creating model
-      model = DCASETALNetClassifier.load_from_checkpoint(PATH, hparams_file=hparams_file)
-      trainer = Trainer.from_argparse_args(hparams)
-      trainer.test()
-   else:
-      main(hparams)
-   # tensorboard --host localhost --logdir /Users/augustinarnault/Downloads/lightning_logs
+   main(hparams)
