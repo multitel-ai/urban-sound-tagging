@@ -22,7 +22,7 @@ conda env create -f environment.yml
 Manual install
 
 ~~~bash
-pip install numpy scikit-learn pandas tqdm albumentations librosa tensorboard torch torchvision oyaml pytorch-lightning
+pip install numpy scikit-learn pandas tqdm albumentations librosa tensorboard torch torchvision oyaml pytorch-lightning numba==0.49
 ~~~
 
 ## Editing `config.py`
@@ -52,11 +52,13 @@ Add `--seed` followed by the seed for to set seed for random operations.
 python training_system1 --gpu 1 --seed 1
 ~~~
 
+You can add `--cleaning_strat Relabeled --relabeled_name INSERT_CSV_HERE` to train on a specific relabeled dataset. See below for relabelling.
+
 ## Relabelling
 
 Once system3 has been trained a first time, we can use it to relabel everything.
 
-You have to specify the ckpt path and the hparams.yml path. Because of a bug in the pytorch-lighnting build used, hparams.yml has to be edited to remove the early stop part.
+You have to specify the ckpt path and the `hparams.yml` path. Because of a bug in the pytorch-lighnting build used, `hparams.yml` has to be edited to remove the early stop part.
 
 ~~~bash
 python relabel.py --path_to_ckpt INSERT_HERE --path_to_yaml INSERT_HERE

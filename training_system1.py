@@ -109,6 +109,9 @@ class DCASETALNetClassifier(LightningModule):
       parser.add_argument('--consensus_threshold', type=float, default=0.0)
       parser.add_argument('--one_hot_time', type=bool, default=False)
 
+      parser.add_argument('--cleaning_strat', type = str, default = 'DCASE', choices = ['DCASE', 'Relabeled'])
+      parser.add_argument('--relabeled_name', type = str, default = 'best2.csv')
+
       return parser
    
    def forward(self, x, meta):
@@ -134,8 +137,8 @@ class DCASETALNetClassifier(LightningModule):
          'metadata':self.hparams.metadata,
          'one_hot_time':self.hparams.one_hot_time,
          'consensus_threshold':self.hparams.consensus_threshold,
-         'cleaning_strat':'Relabeled', 
-         'relabeled_name':'best2.csv'
+         'cleaning_strat':self.hparams.cleaning_strat,
+         'relabeled_name':self.hparams.relabeled_name,
          }
       
       # Creating dataset
@@ -257,7 +260,7 @@ def main(hparams):
       checkpoint_callback=False,
       default_root_dir=MAIN_DIR,
       logger=True,
-      #fast_dev_run=True
+      fast_dev_run=True,
       #train_percent_check=0.001,
       num_sanity_val_steps=0,
       )

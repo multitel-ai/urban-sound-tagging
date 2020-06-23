@@ -1,7 +1,7 @@
 import os
 
-PATH ="../data/"
-#PATH ="/Volumes/Untitled/ML/SONYC-UST2"
+#PATH ="../data/"
+PATH ="/Volumes/Untitled/ML/SONYC-UST2"
 
 # General directories
 path_to_SONYCUST = PATH # os.path.join(PATH,"SONYC-UST")
