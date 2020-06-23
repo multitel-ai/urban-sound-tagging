@@ -5,7 +5,7 @@ import pandas as pd
 
 import torch
 from torch.utils.data import DataLoader
-from training_system3 import DCASETALNetClassifier
+from training_system2 import DCASETALNetClassifier
 
 from tqdm import tqdm
 import config
