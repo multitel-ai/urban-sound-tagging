@@ -1,6 +1,6 @@
 # UrbanNet [DCASE2020 Task 5](http://dcase.community/challenge2020/task-urban-sound-tagging-with-spatiotemporal-context)
 
-This git contains code for CRNNs we used to participate in Task 5 of the DCASE 2020 challenge. This task focuses on hierarchical multilabel urban sound tagging with spatiotemporal context.
+This git contains code for CRNNs we used to achieve first rank in Task 5 of the DCASE 2020 challenge. This task focuses on hierarchical multilabel urban sound tagging with spatiotemporal context. The technical report can be found [here](http://dcase.community/documents/challenge2020/technical_reports/DCASE2020_Arnault_70_t5.pdf).
 
 ## Environement setup
 
@@ -72,4 +72,17 @@ Once it is done, you have to specify both the path to the checkpoint of the mode
 
 ~~~bash
 python sub_system1 --path_to_ckpt INSERT_HERE --path_to_yaml INSERT_HERE
+~~~
+
+## Citing
+
+~~~bibtex
+@techreport{Arnault2020,
+    Author = "Arnault, Augustin and Riche, Nicolas",
+    title = "{CRNNs} for Urban Sound Tagging with Spatiotemporal Context",
+    institution = "DCASE2020 Challenge",
+    year = "2020",
+    month = "October",
+    abstract = "This paper describes CRNNs we used to participate in Task 5 of the DCASE 2020 challenge. This task focuses on hierarchical multilabel urban sound tagging with spatiotemporal context. The code is available to our GitHub repository at https://github.com/multitel-ai/urban-sound-tagging."
+}
 ~~~
