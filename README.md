@@ -53,6 +53,7 @@ python training_system1 --gpu 1 --seed 1
 ~~~
 
 You can add `--cleaning_strat Relabeled --relabeled_name INSERT_CSV_HERE` to train on a specific relabeled dataset. See below for relabelling.
+The pretrained TALNet on Audioset can be found at http://islpc21.is.cs.cmu.edu/yunwang/git/cmu-thesis/model/TALNet.pt.
 
 ## Relabelling
 
