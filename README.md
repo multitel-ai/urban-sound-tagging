@@ -52,10 +52,10 @@ Add `--seed` followed by the seed for to set seed for random operations.
 python training_system1 --gpu 1 --seed 1
 ~~~
 
-You can add `--cleaning_strat Relabeled --relabeled_name INSERT_CSV_HERE` to train on a specific relabeled dataset. See below for relabelling.
+You can add `--cleaning_strat Relabeled --relabeled_name INSERT_CSV_HERE` to train on a specific relabeled dataset. See below for relabeling.
 The pretrained TALNet on Audioset can be found at http://islpc21.is.cs.cmu.edu/yunwang/git/cmu-thesis/model/TALNet.pt.
 
-## Relabelling
+## Relabeling
 
 Once system3 has been trained a first time, we can use it to relabel everything.
 
@@ -67,7 +67,7 @@ python relabel.py --path_to_ckpt INSERT_HERE --path_to_yaml INSERT_HERE
 
 ## Generating submission file
 
-Like the relabelling part, hparams.yml has to be edited to remove the early stop part.
+Like the relabeling part, hparams.yml has to be edited to remove the early stop part.
 
 Once it is done, you have to specify both the path to the checkpoint of the model and the path to the hparams edited.
 
@@ -78,12 +78,10 @@ python sub_system1 --path_to_ckpt INSERT_HERE --path_to_yaml INSERT_HERE
 ## Citing
 
 ~~~bibtex
-@techreport{Arnault2020,
-    Author = "Arnault, Augustin and Riche, Nicolas",
-    title = "{CRNNs} for Urban Sound Tagging with Spatiotemporal Context",
-    institution = "DCASE2020 Challenge",
-    year = "2020",
-    month = "October",
-    abstract = "This paper describes CRNNs we used to participate in Task 5 of the DCASE 2020 challenge. This task focuses on hierarchical multilabel urban sound tagging with spatiotemporal context. The code is available to our GitHub repository at https://github.com/multitel-ai/urban-sound-tagging."
+@article{Arnault2020,
+  title={CRNNs for Urban Sound Tagging with spatiotemporal context},
+  author={Arnault, Augustin and Riche, Nicolas},
+  journal={arXiv preprint arXiv:2008.10413},
+  year={2020}
 }
 ~~~
