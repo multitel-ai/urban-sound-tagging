@@ -164,8 +164,8 @@ class SONYCUST(Dataset):
 
    def download(self):
 
-      if os.path.exists(self.sonycust_folder):
-         return
+      #if os.path.exists(self.sonycust_folder):
+      #   return
 
       os.makedirs(self.sonycust_folder, exist_ok=True)
       
