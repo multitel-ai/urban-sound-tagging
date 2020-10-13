@@ -130,9 +130,6 @@ class DCASETALNetClassifier(LightningModule):
    def val_dataloader(self):
       return DataLoader(self.val_dataset, batch_size=self.hparams.batch_size, num_workers=4)
 
-   def test_dataloader(self):
-      return DataLoader(self.test_dataset, batch_size=self.hparams.batch_size, num_workers=4)
-
    def configure_optimizers(self):
       base_optim_param = {'lr':self.hparams.init_lr}
       base_optim = Ralamb(self.model.parameters(), **base_optim_param)
