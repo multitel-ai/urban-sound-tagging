@@ -1,10 +1,9 @@
 import os
 
-#PATH ="../data/"
-PATH ="/Volumes/Untitled/ML/SONYC-UST2"
+PATH ="../data/"
 
 # General directories
-path_to_SONYCUST = PATH # os.path.join(PATH,"SONYC-UST")
+path_to_SONYCUST = os.path.join(PATH,"SONYC-UST")
 path_to_summaries = os.path.join(PATH,"summaries")
 
 # Pretrained weights
