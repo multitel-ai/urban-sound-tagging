@@ -260,7 +260,7 @@ def main(hparams):
       checkpoint_callback=False,
       default_root_dir=MAIN_DIR,
       logger=True,
-      fast_dev_run=True,
+      #fast_dev_run=True,
       #train_percent_check=0.001,
       num_sanity_val_steps=0,
       )
