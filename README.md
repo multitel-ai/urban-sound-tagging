@@ -43,6 +43,7 @@ If download fails, you can rename/delete old sonycust folder and it will downloa
 
 If you want to manualy download and decompress files, you have to put everything in the `audio` directory. Then you have to use the aboce command without the `--download`. We use the version 2.2 of SONYCUST available [here](https://zenodo.org/record/3873076).
 
+Your SONYC-UST folder should look like this :
 ~~~bash
 .
 └── SONC-UST                    # Given by path_to_SONYCUST in config.py
