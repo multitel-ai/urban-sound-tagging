@@ -1,6 +1,6 @@
 # UrbanNet [DCASE2020 Task 5](http://dcase.community/challenge2020/task-urban-sound-tagging-with-spatiotemporal-context)
 
-This git contains code for CRNNs we used to achieve first rank in Task 5 of the DCASE 2020 challenge. This task focuses on hierarchical multilabel urban sound tagging with spatiotemporal context. The technical report can be found [here](http://dcase.community/documents/challenge2020/technical_reports/DCASE2020_Arnault_70_t5.pdf).
+This git contains code for CRNNs we used to achieve first rank in Task 5 of the DCASE 2020 challenge. This task focuses on hierarchical multilabel urban sound tagging with spatiotemporal context. The technical report can be found [here](https://arxiv.org/pdf/2008.10413.pdf).
 
 ## Environement setup
 
